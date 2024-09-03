@@ -5,14 +5,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import commentRoute from "./route/comments.js";
-import userRoute from "./route/users.js";
 import authRoute from "./route/auth.js";
 
 const config = {
     authRequired: false,
     auth0Logout: true,
     secret: process.env.SECRET,
-    baseURL: '',
+    baseURL: 'http://localhost:3000',
     clientID: process.env.CLIENT_ID,
     issuerBaseURL:process.env.ISSUER_BASE_URL
 };
@@ -23,15 +22,12 @@ if (!config.baseURL && !process.env.BASE_URL && process.env.PORT && process.env.
 }
 
 const app = express();
-app.set("views", "./views");
-app.set("view engine", "ejs");
-app.use(express.json());
+app.use(express.json({limit: '10Mb'}));
 app.use(express.urlencoded({extended: true}))
 app.use(cors({origin: true}));
 app.use(auth(config));
 
 app.use("/comments", commentRoute);
-app.use("/users", userRoute);
-app.use("/auth", authRoute);
+app.use("/authenticate", authRoute);
 
 app.listen(port, () => console.log('Server Running'));
