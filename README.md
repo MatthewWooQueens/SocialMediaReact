@@ -3,10 +3,10 @@ Currently just attempting to create a website with a comment section using a mer
 
 # Current TODO
 ## Frontend
-Design components and pages
-Link pages together
-Add page requests to server
+Design components and pages  
+Link pages together  
+Add page requests to server  
 
 ## Backend
-Setup validation schema for all database collections
-Update route files
+Setup validation schema for all database collections  
+Update route files  
