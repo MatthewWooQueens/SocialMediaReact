@@ -7,9 +7,9 @@ import db from '../db/connection.js';
 dotenv.config();
 
 const generateToken = (userID) => {
+    console.log("Generating tokens");
     const access_token = jwt.sign({userID},process.env.TOKEN_SECRET, {expiresIn: '1m'});
     const refresh_token = jwt.sign({userID},process.env.TOKEN_SECRET, {expiresIn: '2m'});
-    //console.log(refresh_token);
     return {access_token, refresh_token};
 };
 
@@ -73,7 +73,6 @@ export const signup = async (req, res) => {
 
         const { access_token, refresh_token } = generateToken(uuid);
         setCookies(res, access_token, refresh_token);
-        //console.log(refresh_token);
         await storeToken(uuid, refresh_token);
         
         res.status(200).json(newUser);
@@ -93,16 +92,15 @@ export const login = async (req, res) => {
             res.status(400).send("Missing Required Fields");
         }
         const users = db.collection('users');
-
         const curUser = await users.findOne({email:req.body.email});
         if (!(curUser && (await bcrypt.compare(req.body.password, curUser.password)))){
             res.status(400).send("Incorrect email or password");
         }
-        const uuid = MUUID.v4();
-        const { accessToken, refreshToken } = generateToken(uuid);
-        setCookies(res, accessToken, refreshToken);
+        const uuid = MUUID.from(curUser._id);
+        const { access_token, refresh_token } = generateToken(uuid);
+        setCookies(res, access_token, refresh_token);
 
-        await storeToken(uuid, refreshToken);
+        await storeToken(uuid, refresh_token);
 
         res.status(200).json({ 
             _id: curUser._id,
@@ -111,7 +109,7 @@ export const login = async (req, res) => {
         });
 
     }catch (err) {
-        console.error("Error in login", err.message);
+        console.error(err);
         res.status(500).send(err.message);
     }
 };

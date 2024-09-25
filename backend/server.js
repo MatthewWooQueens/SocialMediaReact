@@ -1,11 +1,13 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 import { auth } from "express-openid-connect";
 import dotenv from 'dotenv';
 dotenv.config();
 
-import commentRoute from "./route/comments.js";
+import commentRoute from "./route/thread.js";
 import authRoute from "./route/auth.js";
+import userRoute from "./route/users.js";
 
 const config = {
     authRequired: false,
@@ -26,8 +28,10 @@ app.use(express.json({limit: '10Mb'}));
 app.use(express.urlencoded({extended: true}))
 app.use(cors({origin: true}));
 app.use(auth(config));
+app.use(cookieParser())
 
-app.use("/comments", commentRoute);
-app.use("/authenticate", authRoute);
+app.use("/api/thread", commentRoute);
+app.use("/api/authenticate", authRoute);
+app.use("/api/user", userRoute);
 
 app.listen(port, () => console.log('Server Running'));

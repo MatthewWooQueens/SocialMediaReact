@@ -6,11 +6,21 @@ import MUUID from 'uuid-mongodb';
 const com = db.collection("users");
 
 export const getUsers = async (req, res) => {
-    const body = req.body;
+    try {
+        const result = await com.find().toArray();
+        res.status(200).send(result);
+    } catch (error) {
+        console.error(error)
+        res.status(500).send("Error retrieving users");
+    }
+};
+
+export const oneUser = async (req, res) => {
+    const id = MUUID.from(req.params.id)
 
     try {
-        let result = await com.find({_id: body.userId});
-        res.status(200).send(result);
+        let result = await com.findOne({_id: id});
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).send("Error retrieving user");
     }
