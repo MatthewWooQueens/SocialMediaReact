@@ -1,22 +1,25 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import bcrypt from 'bcrypt';
+//import bcrypt from 'bcrypt';
 import MUUID from 'uuid-mongodb';
 import db from '../db/connection.js';
+import bcryptjs from 'bcryptjs';
 
 dotenv.config();
 
 const generateToken = (userID) => {
     console.log("Generating tokens");
-    const access_token = jwt.sign({userID},process.env.TOKEN_SECRET, {expiresIn: '1m'});
-    const refresh_token = jwt.sign({userID},process.env.TOKEN_SECRET, {expiresIn: '2m'});
+    console.log(`userID: ${userID}`)
+    const access_token = jwt.sign({ "id": userID.toString() },process.env.TOKEN_SECRET, {expiresIn: '1h'});
+    const refresh_token = jwt.sign({ "id": userID.toString() },process.env.TOKEN_SECRET, {expiresIn: '5h'});
     return {access_token, refresh_token};
 };
 
 const storeToken = async (userID, refreshToken) => {
     const token = db.collection('tokens');
     const salt = +process.env.SALT;
-    const hash = await bcrypt.hash(refreshToken, salt);
+    const hash = await bcryptjs.hash(refreshToken,salt);
+    //const hash = await bcrypt.hash(refreshToken, salt);
     await token.insertOne({
         _id: userID,
         createdAt: new Date(),
@@ -31,7 +34,7 @@ const setCookies = (res, accessToken, refreshToken) => {
         path: "/",
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 1 * 60 * 1000,
+        maxAge: 1 * 60 * 60 * 1000,
         httpOnly: true
     });
 
@@ -39,10 +42,20 @@ const setCookies = (res, accessToken, refreshToken) => {
         path: "/",
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 2 * 60 * 1000,
+        maxAge: 5 * 60 * 60 * 1000,
         httpOnly: true
     });
 };
+
+export const profile = async (req,res) => {
+    try {
+        console.log(req.user)
+        res.json(req.user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Could not load");
+    }
+}
 
 export const signup = async (req, res) => {
     try{
@@ -53,16 +66,17 @@ export const signup = async (req, res) => {
                 req.body.password
             )
         ){
-            res.status(400).send("All input is required");
+            return res.status(400).send("All input is required");
         }
         const users = db.collection('users');
         const oldUser = await users.findOne({email: req.body.email})
         if (oldUser) {
-            res.status(400).send("User already exists with that email");
+            return res.status(400).send("User already exists with that email");
         }
         const uuid = MUUID.v4();
         const salt = +process.env.SALT;
-        const hash = await bcrypt.hash(req.body.password, salt);
+        const hash = await bcryptjs.hash(req.body.password,salt);
+        //const hash = await bcrypt.hash(req.body.password, salt);
 
         const newUser = {_id: uuid,
             username: req.body.username,
@@ -79,7 +93,7 @@ export const signup = async (req, res) => {
 
     }catch (err){
         console.error(err)
-        res.status(400).send("Failed to sign up");
+        res.status(500).send("Failed to sign up");
     }
 }
 
@@ -89,11 +103,11 @@ export const login = async (req, res) => {
             req.body.email &&
             req.body.password
         )){
-            res.status(400).send("Missing Required Fields");
+            return res.status(400).send("Missing Required Fields");
         }
         const users = db.collection('users');
         const curUser = await users.findOne({email:req.body.email});
-        if (!(curUser && (await bcrypt.compare(req.body.password, curUser.password)))){
+        if (!(curUser && (await bcryptjs.compare(req.body.password, curUser.password)))){
             res.status(400).send("Incorrect email or password");
         }
         const uuid = MUUID.from(curUser._id);
@@ -134,31 +148,34 @@ export const logout = async (req, res) => {
 
 export const refreshTokens = async (req, res) => {
     try {
+        console.log("Refreshing tokens")
         const refreshToken = req.cookies.refreshToken;
 
         if (!refreshToken) {
-            res.status(400).send("No refresh token provided");
+            return res.status(401).send("No refresh token provided");
         }
 
         const token = db.collection('tokens');
         const decoded = jwt.verify(refreshToken, process.env.TOKEN_SECRET);
-        const hash = await token.findOne({_id: decoded.userID});
-
-        if (!bcrypt.compare(refreshToken, hash)){
-            res.status(400).send("Invalid refresh token");
+        const hash = await token.findOne({_id: MUUID.from(decoded.id)});
+        console.log(decoded)
+        console.log(hash)
+        if (!bcryptjs.compare(refreshToken, hash.refreshToken)){
+            return res.status(401).send("Invalid refresh token");
         }
 
-        const accessToken = jwt.sign(decoded.userID, process.env.TOKEN_SECRET, {expiresIn: "1m"});
+        const accessToken = jwt.sign({"id":decoded.id}, process.env.TOKEN_SECRET, {expiresIn: "1h"});
         res.cookie("accessToken", accessToken, {
             path: "/",
             secure: process.env.NODE_ENV === "production",
             sameSite: "strict",
-            maxAge: 1 * 60 * 1000,
+            maxAge: 1 * 60 * 60 * 1000,
             httpOnly: true
         });
 
         res.status(200).send("Token refresh success");
     } catch (err) {
+        console.log(err)
         res.status(500).send(err);
     }
 }
