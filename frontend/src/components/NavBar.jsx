@@ -4,11 +4,11 @@ import prof from '/images/Profile_avatar_placeholder_large.png';
 
 export const NavBar = () => {
     return (
-        <div className="sticky top-0 left-0 z-40 w-full flex-none bg-gray-900 bg-opacity-90 border-b">
+        <div className="sticky top-0 z-40 w-full flex-none bg-gray-900 bg-opacity-90 border-b">
           <div className="max-w-8x1 mx-auto">
             <div className="py-4 lg:px-8 mx-4">
               <nav className="relative flex items-center">
-                    <NavLink to="/" className='mr-3 overflow-hidden ${isActive ? "bg-red-500": "bg-black-500"}'>
+                    <NavLink to="/" className='mr-3 ${isActive ? "bg-red-500": "bg-black-500"}'>
                         <img src={logo} alt="Logo" className = "w-40 max-h-5"/>
                     </NavLink>
 
