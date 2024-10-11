@@ -18,9 +18,7 @@ function  useAuth(){
             setcheckingAuth(false);
         } catch (error) {
             console.log(error.message)
-            console.log(`checkingAuth:${checkingAuth}`)
             setcheckingAuth(false);
-            console.log(`checkingAuth:${checkingAuth}`)
             setUser(null);
         }
     },[])
@@ -62,12 +60,9 @@ function  useAuth(){
     }
 
     const refreshToken = useCallback(async() =>{
-        console.log(`checkingAuth:${checkingAuth}`)
         if (checkingAuth) return;
-        console.log("reached")
         setcheckingAuth(true);
         try{
-            console.log("attempt")
             const res = await axios.get("./authenticate/refresh");
             setcheckingAuth(false);
             return res.data;
