@@ -1,24 +1,31 @@
-import {useEffect, useState, useCallback} from "react";
+import {useRef, useState, useCallback} from "react";
 import axios from "./axios.js";
 
 
 
 function  useAuth(){
     const [user, setUser] = useState(null)
-    const [checkingAuth, setcheckingAuth] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [checkingAuth,setcheckingAuth] = useState(true)
+    const checkingAuthRef = useRef(checkingAuth);
 
+    const updateCheckingAuth = (value) => {
+        setcheckingAuth(value);
+        checkingAuthRef.current = value
+        console.log(`ref${checkingAuthRef.current}`)
+    };
 
     const checkAuth = useCallback(async () =>{
-        setcheckingAuth(true);
+        updateCheckingAuth(true)
+        console.log(checkingAuth.current)
         try{ 
             const res = await axios.get("./authenticate/profile");
             console.log(res.data)
             setUser(res.data);
-            setcheckingAuth(false);
+            updateCheckingAuth(false)
         } catch (error) {
             console.log(error.message)
-            setcheckingAuth(false);
+            updateCheckingAuth(false)
             setUser(null);
         }
     },[])
@@ -50,7 +57,6 @@ function  useAuth(){
     }
 
     const logout = async () =>{
-        setLoading(true);
         try{
             await axios.post("./authenticate/logout");
             setUser(null);
@@ -60,15 +66,16 @@ function  useAuth(){
     }
 
     const refreshToken = useCallback(async() =>{
-        if (checkingAuth) return;
-        setcheckingAuth(true);
+        console.log(checkingAuth.current)
+        if (checkingAuth.current) return;
+        updateCheckingAuth(true)
         try{
             const res = await axios.get("./authenticate/refresh");
-            setcheckingAuth(false);
+            updateCheckingAuth(false)
             return res.data;
         } catch (error){
             setUser(null);
-            setcheckingAuth(false)
+            updateCheckingAuth(false)
             throw error;
         }
     },[])

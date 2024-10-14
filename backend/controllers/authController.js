@@ -134,7 +134,7 @@ export const logout = async (req, res) => {
         const refreshToken = req.cookies.refreshToken;
         if (refreshToken) {
             const decoded = jwt.verify(refreshToken, process.env.TOKEN_SECRET);
-            tokens.deleteOne({_id: decoded.userID});
+            await tokens.deleteOne({_id: MUUID.from(decoded.id)});
         }
 
         res.clearCookie("accessToken");
@@ -148,11 +148,9 @@ export const logout = async (req, res) => {
 
 export const refreshTokens = async (req, res) => {
     try {
-        console.log("Refreshing tokens")
         const refreshToken = req.cookies.refreshToken;
-
         if (!refreshToken) {
-            return res.status(401).send("No refresh token provided");
+            return res.status(400).send("No refresh token provided");
         }
 
         const token = db.collection('tokens');
@@ -161,7 +159,7 @@ export const refreshTokens = async (req, res) => {
         console.log(decoded)
         console.log(hash)
         if (!bcryptjs.compare(refreshToken, hash.refreshToken)){
-            return res.status(401).send("Invalid refresh token");
+            return res.status(400).send("Invalid refresh token");
         }
 
         const accessToken = jwt.sign({"id":decoded.id}, process.env.TOKEN_SECRET, {expiresIn: "1h"});
@@ -172,7 +170,7 @@ export const refreshTokens = async (req, res) => {
             maxAge: 1 * 60 * 60 * 1000,
             httpOnly: true
         });
-
+        console.log("good")
         res.status(200).send("Token refresh success");
     } catch (err) {
         console.log(err)

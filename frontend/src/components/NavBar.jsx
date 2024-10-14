@@ -25,7 +25,9 @@ export const NavBar = () => {
                       </div>
                       {/*Profile Icon*/}
                       <div className='px-3'>
-                        <img src={prof} alt='Profile Picture'className="w-10"/>
+                        <NavLink to="/logout">
+                          <img src={prof} alt='Profile Picture'className="w-10"/>
+                        </NavLink>
                       </div>        
                     </div>
               </nav>
