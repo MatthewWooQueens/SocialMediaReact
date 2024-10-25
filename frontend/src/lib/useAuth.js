@@ -1,12 +1,16 @@
-import {useRef, useState, useCallback} from "react";
+import {useRef, useState, useEffect, useCallback} from "react";
+import { UserContext } from "../UserContext.jsx";
+import { useContext } from "react";
 import axios from "./axios.js";
 
 
 
 function  useAuth(){
-    const [user, setUser] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const [checkingAuth,setcheckingAuth] = useState(true)
+    //const [user, setUser] = useState(null);
+    const {user, setUser} = useContext(UserContext);
+    const [loading, setLoading] = useState(false);
+    const [error,setError] = useState(null);
+    const [checkingAuth,setcheckingAuth] = useState(true);
     const checkingAuthRef = useRef(checkingAuth);
 
     const updateCheckingAuth = (value) => {
@@ -39,7 +43,8 @@ function  useAuth(){
             setLoading(false);
         } catch (error) {
             setLoading(false);
-            console.error(error.message);
+            console.error(error.response.data);
+            setError(error.response.data)
         }
     }
 
@@ -80,8 +85,13 @@ function  useAuth(){
         }
     },[])
 
+    useEffect(() =>{
+		checkAuth();
+		console.log(`checkingauth${checkingAuth}`)
+	}, [checkAuth]);
 
-    return {user,checkingAuth,loading,checkAuth,signup,login,logout,refreshToken}
+
+    return {user,checkingAuth,loading,error,checkAuth,signup,login,logout,refreshToken}
 }
 
 

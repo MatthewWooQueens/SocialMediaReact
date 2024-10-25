@@ -31,7 +31,7 @@ export const postReply = async (req, res) => {
         console.log("Test");
         res.status(200).send("Reply added");
     } catch (error){
-        console.error(error.message)
+        console.error(error.message);
         res.status(500).send("Error adding reply")
     }
 };
@@ -41,7 +41,7 @@ export const postComment = async(req, res) => {
     try {
         const com = db.collection("comments");
         const th = db.collection("threads");
-        const thread = await th.findOne({_id:MUUID.from(body.threadId)})
+        const thread = await th.findOne({_id:MUUID.from(body.threadId)});
         if (!thread){
             res.status(400).send("thread does not exist");
         }
@@ -55,11 +55,11 @@ export const postComment = async(req, res) => {
             replies: [],
             likes: 0
             }
-        )
-        res.status(200).send("Added comment")
+        );
+        res.status(200).send("Added comment");
     } catch (error) {
         console.error(error.message);
-        res.status(500).send("Error adding comment")
+        res.status(500).send("Error adding comment");
     }
 }
 
@@ -82,22 +82,22 @@ export const getComment = async(req, res) => {
         const com = db.collection("comments");
         const uuid = MUUID.from(threadid);
         const result = await com.find({ threadId: uuid }).toArray();
-        console.log("retrieving comments")
-        res.status(200).send(result)
+        console.log("retrieving comments");
+        res.status(200).send(result);
     } catch (err) {
         res.status(500).send("Error getting comments");
     }
 }
 
 export const getOneThread = async (req, res) => {
-    const {id} = req.params
+    const {id} = req.params;
     console.log(id)
     try {
-        const uuid = MUUID.from(id)
+        const uuid = MUUID.from(id);
         const com = db.collection("threads");
         const result = await com.findOne({_id:uuid});
         console.log('retrieving thread');
-        res.status(200).send(result)
+        res.status(200).send(result);
     } catch (error){
         console.error(error);
         res.status(500).send("Error retrieving thread");
@@ -108,7 +108,18 @@ export const getThreads = async (req, res) => {
     try {
         const com = db.collection("threads");
         const result = await com.find().toArray();
+        
+        const users = db.collection("users");
+        for(let x=0;x<result.length;x++){
+            const user = await users.findOne({_id:result[x].userId},{_id:0,username:1});
+            console.log(user);
+            result[x]["username"] = user.username;
+            result[x]._id = result[x]["_id"].toString();
+            result[x].userId = result[x]["userId"].toString();
+        }
+
         console.log("retrieving all threads");
+        console.log(result)
         res.status(200).send(result)
     } catch (error) {
         console.error(error);

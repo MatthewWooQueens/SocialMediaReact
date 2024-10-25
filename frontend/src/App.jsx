@@ -1,23 +1,14 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "./lib/axios";
+import { Loading } from "./components/Loading.jsx";
+import useAuth from "./lib/useAuth.js";
 import { NavBar } from "./components/NavBar.jsx";
 import { SideBar } from "./components/SideBars.jsx";
-import { Loading } from "./components/Loading.jsx";
-import Home from "./pages/Home.jsx";
-import Signup from "./pages/Signup.jsx";
-import Login from "./pages/Login.jsx";
-import Logout from "./pages/Logout.jsx";
-import useAuth from "./lib/useAuth.js";
-import  './index.css';
 
 function App() {
-	const {user,checkingAuth,checkAuth, refreshToken,logout} = useAuth();
+	const {user,checkingAuth, refreshToken,logout} = useAuth();
 	console.log("rerender")
-	useEffect(() =>{
-		checkAuth();
-		console.log(`checkingauth${checkingAuth}`)
-	}, [checkAuth]);
 
 	let isrefresh = null;
 	axios.interceptors.response.use(
@@ -61,13 +52,10 @@ function App() {
 			</div>
 			<div className = 'relative z-50'>
 				<NavBar />
-				<SideBar />
-				<Routes>
-					<Route path="/" element={<Home />}/>
-					<Route path="/signup" element={!user ? <Signup /> : <Navigate to="/"/>}/>
-					<Route path="/login" element={!user ? <Login /> : <Navigate to="/"/>}/>
-					<Route path="/logout" element={<Logout/>}/>
-				</Routes>
+				<div className="max-w-8x1 mx-auto px-4">
+					<SideBar />
+					{user?<Outlet/>:<Navigate to="/login"/>}
+				</div>
 			</div>
 		</div>
 		

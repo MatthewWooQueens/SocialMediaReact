@@ -108,9 +108,9 @@ export const login = async (req, res) => {
         const users = db.collection('users');
         const curUser = await users.findOne({email:req.body.email});
         if (!(curUser && (await bcryptjs.compare(req.body.password, curUser.password)))){
-            res.status(400).send("Incorrect email or password");
+            return res.status(400).send("Incorrect email or password");
         }
-        const uuid = MUUID.from(curUser._id);
+        const uuid = curUser._id
         const { access_token, refresh_token } = generateToken(uuid);
         setCookies(res, access_token, refresh_token);
 

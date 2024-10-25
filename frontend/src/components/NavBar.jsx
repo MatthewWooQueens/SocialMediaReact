@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import logo from '/images/Placeholder_logo.png';
 import prof from '/images/Profile_avatar_placeholder_large.png';
+import useAuth from "../lib/useAuth.js";
 
 export const NavBar = () => {
     return (
