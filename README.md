@@ -3,10 +3,9 @@ Currently just attempting to create a website with a comment section using a mer
 
 # Current TODO
 ## Frontend
-Design components and pages  
-Link pages together  
-Add page requests to server  
+Add Signup and Login Pages
+Add Profile page
+Navbar create post button
 
 ## Backend
-Setup validation schema for all database collections  
-Update route files  
+Update api when needed
