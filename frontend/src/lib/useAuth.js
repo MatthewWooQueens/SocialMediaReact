@@ -43,21 +43,52 @@ function  useAuth(){
             setLoading(false);
         } catch (error) {
             setLoading(false);
-            console.error(error.response.data);
-            setError(error.response.data)
+            if (error.response){
+                console.error(error.response.data);
+                setError(error.response.data);
+            }else{
+                setError('Error: Network Error')
+            }
         }
     }
 
-    const signup = async (email,username,password) =>{
+    const signup = async (email,email_retype,username,password,password_retype) =>{
         setLoading(true);
+        const email_regex = /^\S+@\S+\.\S+$/
+
+        if (!(email.length < 255) || !email_regex.test(email)){
+            setLoading(false)
+            setError("Invalid Email")
+            return
+        }
+
+        if (email !== email_retype){
+            setLoading(false)
+            setError("Email's are not the same")
+            return
+        }
+
+        const reg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d\w\W]{8,}$/;
+        if (!(password.length < 16 && password.length>7) || !reg.test(password)){
+            setLoading(false);
+            setError("Invalid Password");
+            return;
+        }
+
+        if (password !== password_retype){
+            setLoading(false);
+            setError("Password's are not the same");
+            return;
+        }
+
         try{
             const res = await axios.post("./authenticate/signup",{email,username,password});
             setUser(res.data);
             setLoading(false);
         } catch (error) {
-            setUser(null);
             setLoading(false);
             console.error(error.message);
+            setError(error.response.data);
         }
     }
 
