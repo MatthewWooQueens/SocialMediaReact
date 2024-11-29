@@ -1,5 +1,8 @@
 # Comment Section
-Currently just attempting to create a website with a comment section using a mern stack.
+This is my attempt at creating a social media web app using React
+
+# Suggestions
+If you have any suggestions that could help me to improve project you can make pull request or message me.
 
 # Updates
 <br>
@@ -7,14 +10,11 @@ Currently just attempting to create a website with a comment section using a mer
 <br>
 Added client side and server side validation of email and password  
 
-# Current TODO
-## Frontend
-~~Add Signup and Login Pages~~ 
-  
-Add Profile page  
-Add Navbar buttons
-Add single thread page
-Restrict homepaage to loading 10 threads at a time
-
-## Backend
-Update api when needed
+# Todo
+- Pagination of threads and comments
+- Light and dark theme toggle
+- Profile page
+- Individual thread page
+- Thread post
+- Logout
+- Like and dislike buttons
