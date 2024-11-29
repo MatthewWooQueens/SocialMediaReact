@@ -81,7 +81,8 @@ export const signup = async (req, res) => {
         const newUser = {_id: uuid,
             username: req.body.username,
             email: req.body.email,
-            password: hash}
+            password: hash,
+            role:"user"}
 
         await users.insertOne(newUser);
 

@@ -1,8 +1,10 @@
 import {useEffect,useState} from "react";
 import {Navigate,useNavigate} from "react-router-dom";
 import useThreads from "../lib/useThreads.js";
-import {Loading} from "./Loading.jsx"
-import {UserProfile} from "./UserProfile.jsx"
+import {Loading} from "./Loading.jsx";
+import {UserProfile} from "./UserProfile.jsx";
+import {LikeButton} from "./LikeButton.jsx";
+
 export const ThreadsPrev = () => {
     const {loading,threads,getThreads} = useThreads();
     const navigate = useNavigate()
@@ -35,6 +37,9 @@ export const ThreadsPrev = () => {
                             <a className="text-ellipsis text-[14px] line-clamp-6">
                                 {thread.textBody}
                             </a>
+                            <span className="bg-slate-400">
+                                <LikeButton/>
+                            </span>
                         </div>
                     </article>
                     <hr className="border-0 border-b border-solid"/>

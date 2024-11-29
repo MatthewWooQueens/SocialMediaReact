@@ -17,10 +17,8 @@ export const ProfileHoverCard = (props) => {
             throw error;
         }
     }
-    console.log(user)
     useEffect(()=>{
         if(props.show && !user){
-            console.log("reach")
             content();
         }
     },[props.show])

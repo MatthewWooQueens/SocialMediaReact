@@ -25,7 +25,8 @@ export const postReply = async (req, res) => {
                 _id: uuid, 
                 userId: MUUID.from(body.userId),
                 commentText: body.text,
-                timeOfCmnt: new Date(Date.now())}}
+                timeOfCmnt: new Date(Date.now()),
+                likes:[]}}
             }
         )
         console.log("Test");
@@ -53,7 +54,7 @@ export const postComment = async(req, res) => {
             commentText: body.commentText,
             timeOfCmnt: new Date(Date.now()),
             replies: [],
-            likes: 0
+            likes: []
             }
         );
         res.status(200).send("Added comment");
@@ -116,6 +117,7 @@ export const getThreads = async (req, res) => {
             result[x]["username"] = user.username;
             result[x]._id = result[x]["_id"].toString();
             result[x].userId = result[x]["userId"].toString();
+            result[x].likes = result[x].likes.length
         }
 
         console.log("retrieving all threads");
@@ -136,12 +138,36 @@ export const createThread = async (req, res) => {
             userId: MUUID.from(body.userId),
             textBody: body.text,
             timeOfThread: new Date(Date.now()),
-            likes: 0,
+            likes: [],
             title: body.title});
         res.status(200).send("Creating thread")
     } catch (error) {
         console.error(error);
         res.status(500).send("Error creating thread")
+    }
+}
+
+export const threadlike = async(req,res) => {
+    const body = req.body;
+    try{
+        const com = db.collection("threads");
+        com.updateOne({_id:MUUID.from(body.id)},{$push:{likes:MUUID.from(body.userid)}})
+        res.status(200).send("Added")
+    } catch (error){
+        console.error(error);
+        res.status(500).send("Error")
+    }
+}
+
+export const threadremovelike = async(req,res) => {
+    const body = req.body;
+    try{
+        const com = db.collection("threads");
+        com.updateOne({_id:MUUID.from(body.id)},{$pull:{likes:MUUID.from(body.userid)}})
+        res.status(200).send("Removed")
+    } catch (error){
+        console.error(error);
+        res.status(500).send("Error")
     }
 }
 
