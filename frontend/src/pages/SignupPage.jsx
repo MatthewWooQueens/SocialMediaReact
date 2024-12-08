@@ -1,7 +1,7 @@
 import {useRef} from 'react';
 import useAuth from "../lib/useAuth.js";
 import {Navigate} from "react-router-dom"
-
+//Can use onfocus and onfocusout to check input
 const Signup = () =>{
     const email = useRef('');
     const email_retype = useRef('');

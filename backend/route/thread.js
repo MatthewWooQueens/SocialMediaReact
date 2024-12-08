@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 
-import {getThreads, getOneThread, createThread, getComment, getOneComment, postComment, getReplies, postReply, threadlike, threadremovelike} from "../controllers/threadController.js";
+import {getThreads, getOneThread, createThread, getComment, getOneComment, postComment, getReplies, postReply, threadlike,threadDislike} from "../controllers/threadController.js";
 
 router.get("/", getThreads);
 router.post("/", createThread);
@@ -11,8 +11,8 @@ router.get("/:threadid/comments",getComment);
 router.get("/:threadid/:commentid", getOneComment);
 router.post("/comments/reply", postReply);
 router.get("/comments/:commentid/reply/:replyid", getReplies);
-router.post("/like/like", threadlike);
-router.post("/like/remove", threadremovelike);
+router.post("/like", threadlike);
+router.post("/dislike", threadDislike);
 
 export default router;
 

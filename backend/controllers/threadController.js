@@ -26,7 +26,8 @@ export const postReply = async (req, res) => {
                 userId: MUUID.from(body.userId),
                 commentText: body.text,
                 timeOfCmnt: new Date(Date.now()),
-                likes:[]}}
+                likes:[],
+                dislikes:[]}}
             }
         )
         console.log("Test");
@@ -54,7 +55,8 @@ export const postComment = async(req, res) => {
             commentText: body.commentText,
             timeOfCmnt: new Date(Date.now()),
             replies: [],
-            likes: []
+            likes: [],
+            dislikes: []
             }
         );
         res.status(200).send("Added comment");
@@ -97,6 +99,11 @@ export const getOneThread = async (req, res) => {
         const uuid = MUUID.from(id);
         const com = db.collection("threads");
         const result = await com.findOne({_id:uuid});
+        const user = await users.findOne({_id:result[x].userId},{_id:0,username:1});
+        result["username"] = user.username;
+        result._id = result["_id"].toString();
+        result.userId = result["userId"].toString();
+        result.likes = result.likes.length
         console.log('retrieving thread');
         res.status(200).send(result);
     } catch (error){
@@ -106,22 +113,30 @@ export const getOneThread = async (req, res) => {
 }
 
 export const getThreads = async (req, res) => {
+    const query = req.query;
+    const a = {}
     try {
         const com = db.collection("threads");
-        const result = await com.find().toArray();
-        
+        const result = await com.find({},{likes:0,dislikes:0}).toArray();
         const users = db.collection("users");
         for(let x=0;x<result.length;x++){
-            const user = await users.findOne({_id:result[x].userId},{_id:0,username:1});
-            console.log(user);
+            const user = await users.findOne({_id:result[x].userId},{_id:0,username:1},);
             result[x]["username"] = user.username;
-            result[x]._id = result[x]["_id"].toString();
             result[x].userId = result[x]["userId"].toString();
+            if (query !== a){
+                if (await com.findOne({_id:result[x]._id,likes:MUUID.from(query.id)})){
+                    result[x]['liked'] = true
+                }else if(await com.findOne({_id:result[x]._id,dislikes:MUUID.from(query.id)})){
+                    result[x]['liked'] = false
+                }else{
+                    result[x]['liked'] = null
+                }
+            }
+            result[x]._id = result[x]["_id"].toString();
             result[x].likes = result[x].likes.length
         }
 
         console.log("retrieving all threads");
-        console.log(result)
         res.status(200).send(result)
     } catch (error) {
         console.error(error);
@@ -139,7 +154,8 @@ export const createThread = async (req, res) => {
             textBody: body.text,
             timeOfThread: new Date(Date.now()),
             likes: [],
-            title: body.title});
+            title: body.title,
+            dislikes: []});
         res.status(200).send("Creating thread")
     } catch (error) {
         console.error(error);
@@ -151,23 +167,60 @@ export const threadlike = async(req,res) => {
     const body = req.body;
     try{
         const com = db.collection("threads");
-        com.updateOne({_id:MUUID.from(body.id)},{$push:{likes:MUUID.from(body.userid)}})
-        res.status(200).send("Added")
+        if(body.add){
+            if (com.findOne({_id:MUUID.from(body.id),likes:MUUID.from(body.userid)})){
+                com.updateOne({_id:MUUID.from(body.id)},{$push:{likes:MUUID.from(body.userid)}});
+            }
+            com.updateOne({_id:MUUID.from(body.id)},{$pull:{dislikes:MUUID.from(body.userid)}});
+        }else{
+            com.updateOne({_id:MUUID.from(body.id)},{$pull:{likes:MUUID.from(body.userid)}});
+        }
+        res.status(200).send("Ok")
     } catch (error){
         console.error(error);
         res.status(500).send("Error")
     }
 }
 
-export const threadremovelike = async(req,res) => {
+export const threadDislike = async(req,res) => {
     const body = req.body;
     try{
         const com = db.collection("threads");
+        if(body.add){
+            com.updateOne({_id:MUUID.from(body.id)},{$pull:{dislikes:MUUID.from(body.userid)}});
+        }else{
+            com.updateOne({_id:MUUID.from(body.id)},{$push:{dislikes:MUUID.from(body.userid)}});
+            com.updateOne({_id:MUUID.from(body.id)},{$pull:{likes:MUUID.from(body.userid)}});
+        }
+        res.status(200).send("Ok")
+    } catch (error){
+        console.error(error);
+        res.status(500).send("Error")
+    }
+}
+
+export const commentlike = async(req,res) => {
+    const body = req.body;
+    const query = req.query;
+    try{
+        const com = db.collection("comments");
         com.updateOne({_id:MUUID.from(body.id)},{$pull:{likes:MUUID.from(body.userid)}})
         res.status(200).send("Removed")
     } catch (error){
         console.error(error);
-        res.status(500).send("Error")
+        res.status(500).send("Error");
+    }
+}
+
+export const checkLike = async(req,res) =>{
+    const body = req.body;
+    try{
+        const com = db.collection("threads");
+        com.find({_id:body.id},{likes:body.userid});
+        res.status(200).send()
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
     }
 }
 
